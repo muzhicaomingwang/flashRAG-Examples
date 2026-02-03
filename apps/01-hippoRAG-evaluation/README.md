@@ -262,8 +262,7 @@ ppr_parameters:
 ├── data/                        # 数据目录
 │   ├── datasets/                    # 原始数据集（7个）
 │   ├── indices/                     # 检索索引
-│   │   ├── faiss/                  # FAISS 向量索引
-│   │   ├── chroma/                 # Chroma 向量索引
+│   │   ├── faiss/                  # FAISS 向量索引 + 文档映射
 │   │   └── bm25/                   # BM25 索引
 │   └── knowledge_graphs/            # 知识图谱
 │       ├── entities.json           # 实体库
@@ -379,10 +378,11 @@ separators: ["\n\n", "\n", ". ", " ", ""]
 
 **向量化：**
 - 模型：OpenAI text-embedding-ada-002
-- 向量数据库：Chroma（持久化 + 元数据支持）
+- 向量数据库：FAISS（高性能相似度检索）
+- 持久化方案：FAISS index + pickle 存储文档映射
 
 **稀疏检索：**
-- BM25 (Elasticsearch/rank_bm25)
+- BM25 (rank_bm25 库)
 
 ### 9.2 HippoRAG 额外组件
 

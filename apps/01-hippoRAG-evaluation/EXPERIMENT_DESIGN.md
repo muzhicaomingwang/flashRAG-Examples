@@ -25,9 +25,9 @@ CHUNK_CONFIG = {
 | 组件 | 技术选择 | 说明 |
 |-----|---------|------|
 | **文档分块** | LangChain RecursiveCharacterTextSplitter | 统一分块策略 |
-| **向量化** | OpenAI text-embedding-ada-002 | 或 sentence-transformers |
-| **向量存储** | FAISS / Chroma | 高效相似度检索 |
-| **稀疏检索** | BM25 (Elasticsearch) | 关键词匹配 baseline |
+| **向量化** | OpenAI text-embedding-ada-002 | 1536 维向量 |
+| **向量存储** | FAISS (Facebook AI Similarity Search) | 高性能相似度检索 |
+| **稀疏检索** | BM25 (rank_bm25 库) | 关键词匹配 baseline |
 
 #### B. HippoRAG 知识库
 
@@ -339,15 +339,41 @@ for chunk_id, chunk in enumerate(chunks):
 nx.write_gpickle(kg, "data/knowledge_graphs/hipporag_kg.gpickle")
 ```
 
-### 4.4 向量数据库选择建议
+### 4.4 向量数据库选择：FAISS
 
-| 数据库 | 优点 | 缺点 | 推荐场景 |
-|-------|------|------|---------|
-| **FAISS** | 极快、内存高效 | 仅内存、功能简单 | 小规模实验（<10M 文档） |
-| **Chroma** | 易用、持久化、支持元数据 | 速度稍慢 | 中小规模（<1M 文档） |
-| **Milvus** | 分布式、可扩展 | 部署复杂 | 大规模生产环境 |
+**选择理由：**
 
-**推荐：** Chroma（平衡易用性和功能性）
+| 优势 | 说明 |
+|-----|------|
+| **极致性能** | Meta AI 开发，专为高效向量检索优化 |
+| **内存高效** | 支持多种索引类型（Flat、IVF、HNSW），灵活权衡速度和内存 |
+| **GPU 加速** | 支持 CUDA，检索速度提升 5-10 倍 |
+| **久经考验** | 广泛应用于学术研究和工业界 |
+| **完全免费** | MIT 开源协议，无隐藏成本 |
+
+**持久化方案：**
+```python
+# FAISS 本身只是索引库，需要手动管理持久化
+import faiss
+import pickle
+
+# 1. 保存 FAISS 索引
+faiss.write_index(index, "data/indices/faiss/hotpotqa.index")
+
+# 2. 保存文档映射（id -> 文档内容）
+with open("data/indices/faiss/hotpotqa_docs.pkl", "wb") as f:
+    pickle.dump(doc_mapping, f)
+
+# 3. 加载索引
+index = faiss.read_index("data/indices/faiss/hotpotqa.index")
+with open("data/indices/faiss/hotpotqa_docs.pkl", "rb") as f:
+    doc_mapping = pickle.load(f)
+```
+
+**索引类型选择：**
+- **IndexFlatL2：** 精确搜索，速度中等（推荐用于实验）
+- **IndexIVFFlat：** 快速近似搜索（适合大规模数据）
+- **IndexHNSWFlat：** 极快检索，内存占用高
 
 ---
 
@@ -563,9 +589,10 @@ embedding:
 
 # 向量存储配置
 vector_store:
-  type: "chroma"  # or "faiss"
-  persist_directory: "./data/indices/chroma"
-  distance_metric: "cosine"
+  type: "faiss"
+  index_type: "IndexFlatL2"  # 精确搜索（推荐）
+  persist_directory: "./data/indices/faiss"
+  distance_metric: "L2"  # 或 "cosine"（需要归一化）
 
 # BM25 配置
 bm25:
