@@ -1,0 +1,100 @@
+# 实验配置文件 - 2天冲刺方案
+
+# 数据集配置
+dataset:
+  name: "hotpotqa"
+  split: "dev"
+  max_samples: 500  # 减少样本量以加速实验
+  random_seed: 42
+
+# 文档处理配置（所有方法统一）
+document_processing:
+  chunk_size: 512
+  chunk_overlap: 50
+  separators: ["\n\n", "\n", ". ", " ", ""]
+  tokenizer: "cl100k_base"  # tiktoken
+
+# 向量化配置
+embedding:
+  model: "text-embedding-3-small"  # 使用更便宜的模型
+  batch_size: 100
+  max_retries: 3
+  timeout: 30
+
+# FAISS 配置
+faiss:
+  index_type: "IndexFlatL2"  # 精确搜索
+  normalize_vectors: true
+  persist_path: "./data/indices/faiss/hotpotqa.index"
+  doc_mapping_path: "./data/indices/faiss/hotpotqa_docs.pkl"
+
+# BM25 配置
+bm25:
+  k1: 1.5
+  b: 0.75
+  persist_path: "./data/indices/bm25/hotpotqa_bm25.pkl"
+
+# Baseline RAG 配置
+baseline_rag:
+  retriever_type: "dense"  # dense / sparse / hybrid
+  top_k: 5
+  llm_model: "gpt-3.5-turbo"
+  llm_temperature: 0.0
+  llm_max_tokens: 256
+
+# HippoRAG 配置
+hipporag:
+  # 采样配置（节省成本）
+  sampling_ratio: 0.3  # 只处理30%的文档块
+
+  # 实体识别配置
+  entity_extraction:
+    method: "spacy"  # spacy / llm / hybrid
+    spacy_model: "en_core_web_sm"
+    min_entities_per_chunk: 2
+    max_entities_per_chunk: 10
+
+  # 关系抽取配置（使用SpaCy依存句法，不用LLM）
+  relation_extraction:
+    method: "spacy_dep"  # spacy_dep / llm
+    max_relations_per_chunk: 10
+    confidence_threshold: 0.0  # SpaCy不提供置信度
+
+  # 知识图谱配置
+  knowledge_graph:
+    graph_type: "networkx"  # networkx / neo4j
+    persist_path: "./data/knowledge_graphs/hotpotqa_kg.gpickle"
+
+  # PageRank 配置
+  pagerank:
+    damping_factor: 0.85
+    max_iterations: 100
+    convergence_threshold: 1e-6
+    personalization_weight: 0.8
+
+  # 检索配置
+  retrieval:
+    initial_retrieval: "dense"  # 先用 FAISS 初检索
+    initial_k: 20  # 初检索获取20个候选
+    rerank_k: 5    # PPR 重排序后返回5个
+    llm_model: "gpt-3.5-turbo"
+    llm_temperature: 0.0
+    llm_max_tokens: 256
+
+# 评估配置
+evaluation:
+  metrics:
+    - "f1"
+    - "exact_match"
+    - "recall@5"
+    - "precision@5"
+
+  output_dir: "./results"
+  save_predictions: true
+  save_plots: true
+
+# API 配置
+api:
+  openai_api_key: null  # 从环境变量读取
+  max_concurrent_requests: 10
+  rate_limit_buffer: 0.1  # 请求间隔（秒）

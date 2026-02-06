@@ -1,0 +1,26 @@
+{
+  "baseline": {
+    "f1_mean": 0.41292780482894365,
+    "f1_std": 0.4186001926476234,
+    "em_mean": 0.268,
+    "em_std": 0.4429175995600084,
+    "latency_mean": 1.8530691156387329,
+    "latency_std": 0.5719633150474154,
+    "latency_median": 1.7158005237579346,
+    "success_rate": 1.0,
+    "total": 500,
+    "successful": 500
+  },
+  "hipporag": {
+    "f1_mean": 0.40188558764951415,
+    "f1_std": 0.4150290012641376,
+    "em_mean": 0.256,
+    "em_std": 0.4364218143035474,
+    "latency_mean": 2.165583442211151,
+    "latency_std": 0.650457809758728,
+    "latency_median": 2.0503005981445312,
+    "success_rate": 1.0,
+    "total": 500,
+    "successful": 500
+  }
+}

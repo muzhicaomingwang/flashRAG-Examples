@@ -1,0 +1,28 @@
+{
+  "num_nodes": 19564,
+  "num_edges": 26128,
+  "num_chunks": 3012,
+  "num_entities": 16552,
+  "top_entities": {
+    "american": 455,
+    "one": 270,
+    "the united states": 182,
+    "first": 161,
+    "two": 160,
+    "english": 133,
+    "third": 128,
+    "united states": 80,
+    "british": 80,
+    "three": 79,
+    "u.s.": 77,
+    "french": 74,
+    "2011": 69,
+    "2010": 68,
+    "2002": 67,
+    "2012": 65,
+    "second": 63,
+    "new york": 59,
+    "2013": 59,
+    "2008": 58
+  }
+}

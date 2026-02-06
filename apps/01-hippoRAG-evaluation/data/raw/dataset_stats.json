@@ -1,0 +1,6 @@
+{
+  "corpus_size": 66573,
+  "validation_size": 500,
+  "avg_doc_length": 89.29345230048217,
+  "avg_question_length": 15.798
+}

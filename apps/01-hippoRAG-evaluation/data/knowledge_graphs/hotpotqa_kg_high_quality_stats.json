@@ -1,0 +1,13 @@
+{
+  "num_nodes": 303817,
+  "num_edges": 613241,
+  "num_chunks": 46747,
+  "num_entities": 257070,
+  "num_entity_relations": 5474,
+  "chunk_entity_edges": 257070,
+  "graph_density": 6.643676397836762e-06,
+  "sampling_ratio": 0.7,
+  "llm_extraction": true,
+  "api_calls": 5000,
+  "total_cost": 3.974605999999998
+}

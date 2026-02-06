@@ -345,25 +345,93 @@ ppr_parameters:
 
 ## 8. 快速开始
 
+### ✅ 当前项目状态（2026-02-03更新）
+
+**完成度：** 85% - 所有代码就绪，等待云端执行
+
+**已完成：**
+- ✅ 完整实验框架（6个Python脚本，1,220行代码）
+- ✅ 配置文件和环境设置
+- ✅ HotpotQA数据下载（66K文档 + 500验证集）
+- ✅ Python环境和所有依赖安装
+- ✅ 成本优化（$969 → $4.57，节省99.5%）
+
+**当前阻塞：**
+- ⚠️ 本地内存不足（需要>=4GB RAM）
+
+**解决方案：** 在云端执行（Google Colab推荐）
+
+### 🚀 执行方案（2天完成）
+
+#### 方案 A：一键运行（推荐）
+
 ```bash
-# 1. 安装依赖
-pip install -r requirements.txt
+cd /Users/qitmac001395/workspace/QAL/flashRAG-Examples/apps/01-hippoRAG-evaluation
 
-# 2. 下载数据集
-python scripts/download_datasets.py --datasets hotpotqa
+# Day 1: 构建Baseline RAG（约40分钟，成本$0.22）
+./run_day1.sh
 
-# 3. 运行基线实验
-python scripts/run_baseline.py --method bm25 --dataset hotpotqa
+# Day 2: 运行HippoRAG实验（约30分钟，成本$4.35）
+./run_day2.sh
 
-# 4. 构建知识图谱
-python scripts/build_kg.py --dataset hotpotqa
-
-# 5. 运行 HippoRAG
-python scripts/run_hipporag.py --dataset hotpotqa
-
-# 6. 生成结果报告
-python scripts/evaluate.py --compare baseline hipporag
+# 查看结果
+cat results/comparison_table.md
 ```
+
+#### 方案 B：分步运行
+
+```bash
+# 激活环境
+source venv/bin/activate
+
+# Step 1: 下载数据（已完成✅）
+python scripts/01_download_data.py
+
+# Step 2: 构建Baseline（30-40分钟）
+python scripts/02_build_baseline.py
+
+# Step 3: 测试Baseline（1分钟）
+python scripts/03_test_baseline.py
+
+# Step 4: 构建HippoRAG（20-30分钟）
+python scripts/04_build_hipporag.py
+
+# Step 5: 运行实验（10-15分钟）
+python scripts/05_run_experiments.py
+
+# Step 6: 生成报告（2分钟）
+python scripts/06_generate_report.py
+```
+
+### ☁️ 云端执行（解决内存问题）
+
+参考详细指南：[CLOUD_EXECUTION_GUIDE.md](./CLOUD_EXECUTION_GUIDE.md)
+
+**Google Colab（推荐）：** 免费12GB RAM，约1小时完成
+**AWS EC2：** t3.medium，成本$0.05/小时
+**本地其他机器：** 需要>=8GB RAM
+
+### 📚 详细文档
+
+| 文档 | 内容 |
+|------|------|
+| [QUICKSTART.md](./QUICKSTART.md) | 快速开始指南 |
+| [EXECUTION_GUIDE.md](./EXECUTION_GUIDE.md) | 详细执行步骤 |
+| [CLOUD_EXECUTION_GUIDE.md](./CLOUD_EXECUTION_GUIDE.md) | 云端执行方案 |
+| [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) | 故障排除 |
+| [DELIVERABLES.md](./DELIVERABLES.md) | 完整交付清单 |
+| [PROJECT_SUMMARY.md](./PROJECT_SUMMARY.md) | 项目总结 |
+
+### 💰 优化后的成本
+
+| 项目 | 成本 |
+|------|------|
+| 向量化（text-embedding-3-small） | $0.22 |
+| KG构建（SpaCy，无LLM） | $0.00 |
+| 实验运行（500问题×2组） | $4.35 |
+| **总计** | **$4.57** |
+
+**对比原计划：** 节省 $964（99.5%）！
 
 ## 9. 知识库构建技术方案
 

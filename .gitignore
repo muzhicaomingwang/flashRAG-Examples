@@ -6,3 +6,5 @@ __pycache__/
 venv/
 .env
 .DS_Store
+*.log
+apps/01-hippoRAG-evaluation/data/indices/faiss/*_full.index
