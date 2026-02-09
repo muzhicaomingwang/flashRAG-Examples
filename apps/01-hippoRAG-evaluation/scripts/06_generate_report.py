@@ -12,6 +12,7 @@
 import os
 import sys
 import json
+from datetime import date
 from pathlib import Path
 from typing import List, Dict
 from collections import defaultdict
@@ -21,6 +22,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 import numpy as np
+import yaml
 from sklearn.metrics import f1_score
 
 
@@ -169,6 +171,97 @@ def generate_comparison_table(all_metrics: Dict[str, Dict]) -> str:
     return table
 
 
+def load_config() -> Dict:
+    """加载实验配置"""
+    config_path = project_root / "configs" / "experiment_config.yaml"
+    with open(config_path, "r") as f:
+        return yaml.safe_load(f)
+
+
+def generate_experiment_record(config: Dict, all_metrics: Dict[str, Dict]) -> str:
+    """生成可复现实验记录"""
+    dataset = config.get("dataset", {})
+    doc_proc = config.get("document_processing", {})
+    embedding = config.get("embedding", {})
+    faiss_cfg = config.get("faiss", {})
+    baseline = config.get("baseline_rag", {})
+    hipporag = config.get("hipporag", {})
+    retrieval = hipporag.get("retrieval", {})
+    pagerank = hipporag.get("pagerank", {})
+
+    lines = []
+    lines.append("# Experiment Record")
+    lines.append("")
+    lines.append("## Run Metadata")
+    lines.append(f"- Date (YYYY-MM-DD): {date.today().isoformat()}")
+    lines.append("- Operator:")
+    lines.append("- Purpose / Hypothesis:")
+    lines.append(f"- Dataset: {dataset.get('name', '')}")
+    lines.append(f"- Split: {dataset.get('split', '')}")
+    lines.append(f"- Sample size (max_samples): {dataset.get('max_samples', '')}")
+    lines.append(f"- Random seed: {dataset.get('random_seed', '')}")
+    lines.append("")
+    lines.append("## Code & Environment")
+    lines.append(f"- Repo path: {project_root}")
+    lines.append("- Git branch:")
+    lines.append("- Git commit:")
+    lines.append("- Dirty worktree (yes/no):")
+    lines.append("- Python version:")
+    lines.append("- OS:")
+    lines.append("")
+    lines.append("## Model & API")
+    lines.append(f"- LLM (generation): baseline={baseline.get('llm_model', '')}; hipporag={retrieval.get('llm_model', '')}")
+    lines.append(f"- Embedding model: {embedding.get('model', '')}")
+    lines.append(f"- Temperature: {baseline.get('llm_temperature', '')}")
+    lines.append(f"- Max tokens: {baseline.get('llm_max_tokens', '')}")
+    lines.append("- API provider:")
+    lines.append("- Rate limit / concurrency:")
+    lines.append("")
+    lines.append("## Retrieval & Index")
+    lines.append(f"- Baseline top_k: {baseline.get('top_k', '')}")
+    lines.append(f"- HippoRAG initial_k: {retrieval.get('initial_k', '')}")
+    lines.append(f"- HippoRAG rerank_k: {retrieval.get('rerank_k', '')}")
+    lines.append(f"- FAISS index type: {faiss_cfg.get('index_type', '')}")
+    lines.append(f"- Normalize vectors: {str(faiss_cfg.get('normalize_vectors', '')).lower()}")
+    lines.append("")
+    lines.append("## Document Processing")
+    lines.append(f"- Chunk size: {doc_proc.get('chunk_size', '')}")
+    lines.append(f"- Chunk overlap: {doc_proc.get('chunk_overlap', '')}")
+    lines.append(f"- Separators: {doc_proc.get('separators', '')}")
+    lines.append(f"- Tokenizer: {doc_proc.get('tokenizer', '')}")
+    lines.append("")
+    lines.append("## HippoRAG Graph")
+    lines.append(f"- Sampling ratio: {hipporag.get('sampling_ratio', '')}")
+    lines.append(f"- NER method: {hipporag.get('entity_extraction', {}).get('method', '')}")
+    lines.append(f"- RE method: {hipporag.get('relation_extraction', {}).get('method', '')}")
+    lines.append(f"- PageRank damping factor: {pagerank.get('damping_factor', '')}")
+    lines.append(f"- PageRank max iterations: {pagerank.get('max_iterations', '')}")
+    lines.append("")
+    lines.append("## Runs")
+    lines.append("- Baseline RAG: results/baseline/predictions.json")
+    lines.append("- HippoRAG: results/hipporag/predictions.json")
+    lines.append("")
+    lines.append("## Metrics")
+    baseline_metrics = all_metrics.get("Baseline-RAG", {})
+    hipporag_metrics = all_metrics.get("HippoRAG", {})
+    if baseline_metrics:
+        lines.append(f"- Baseline F1: {baseline_metrics['f1']['mean']:.4f}")
+        lines.append(f"- Baseline EM: {baseline_metrics['exact_match']['mean']:.4f}")
+    if hipporag_metrics:
+        lines.append(f"- HippoRAG F1: {hipporag_metrics['f1']['mean']:.4f}")
+        lines.append(f"- HippoRAG EM: {hipporag_metrics['exact_match']['mean']:.4f}")
+    lines.append("")
+    lines.append("## Notes / Anomalies")
+    lines.append("-")
+    lines.append("")
+    lines.append("## Comparison")
+    lines.append("- Against prior run (commit/date):")
+    lines.append("- Key deltas:")
+    lines.append("")
+
+    return "\n".join(lines)
+
+
 def main():
     """主函数"""
     print("=" * 60)
@@ -208,6 +301,14 @@ def main():
     with open(table_path, 'w') as f:
         f.write(comparison_table)
     print(f"✅ 对比表格已保存: {table_path}")
+
+    # 生成实验记录（自动填充基础字段）
+    config = load_config()
+    record_content = generate_experiment_record(config, all_metrics)
+    record_path = project_root / "results" / "experiment_record_latest.md"
+    with open(record_path, "w") as f:
+        f.write(record_content)
+    print(f"✅ 实验记录已保存: {record_path}")
 
     # 打印对比表格
     print(f"\n{comparison_table}")
